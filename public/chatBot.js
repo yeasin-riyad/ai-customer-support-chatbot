@@ -348,6 +348,7 @@
 
       const result = await response.json();
 
+
       if (!response.ok || !result.success) {
         throw new Error(
           result.message || "Unable to get a response. Please try again.",

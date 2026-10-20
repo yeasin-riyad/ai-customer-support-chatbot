@@ -19,10 +19,10 @@ import {
   Settings2,
   AlertCircle,
 } from "lucide-react";
+import { toast } from "sonner";
 
 type DashboardClientProps = {
   ownerId: string;
-  email: string;
 };
 
 type SettingsForm = {
@@ -39,7 +39,6 @@ const initialForm: SettingsForm = {
 
 const DashboardClient = ({
   ownerId,
-  email,
 }: DashboardClientProps) => {
   const shouldReduceMotion = useReducedMotion();
   const router = useRouter();
@@ -141,7 +140,8 @@ const DashboardClient = ({
         knowledge: result.data.knowledge ?? "",
       });
 
-      setSuccess("Your settings have been saved successfully.");
+      toast.success("Your settings have been saved successfully.")
+      router.push("/embed");
     } catch {
       setError("Could not connect to the server. Please try again.");
     } finally {

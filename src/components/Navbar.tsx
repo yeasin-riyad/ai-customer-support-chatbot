@@ -85,27 +85,7 @@ const Navbar = ({ email }: NavbarProps) => {
           </div>
         </Link>
 
-        {/* Desktop navigation */}
-        <div className="hidden items-center gap-8 md:flex">
-          <a
-            href="#features"
-            className="text-sm text-slate-400 transition-colors hover:text-white"
-          >
-            Features
-          </a>
-          <a
-            href="#how-it-works"
-            className="text-sm text-slate-400 transition-colors hover:text-white"
-          >
-            How it works
-          </a>
-          <a
-            href="#demo"
-            className="text-sm text-slate-400 transition-colors hover:text-white"
-          >
-            Live demo
-          </a>
-        </div>
+       
 
         {/* Auth actions */}
         <div className="flex items-center gap-3">
@@ -187,63 +167,9 @@ const Navbar = ({ email }: NavbarProps) => {
               <ArrowRight className="h-4 w-4" />
             </button>
           )}
-
-          {/* Mobile menu toggle */}
-          <button
-            type="button"
-            aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
-            aria-expanded={mobileMenuOpen}
-            onClick={() => setMobileMenuOpen((previous) => !previous)}
-            className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 text-white transition hover:bg-white/10 md:hidden"
-          >
-            {mobileMenuOpen ? (
-              <X className="h-5 w-5" />
-            ) : (
-              <Menu className="h-5 w-5" />
-            )}
-          </button>
         </div>
       </nav>
 
-      {/* Mobile navigation */}
-      <AnimatePresence>
-        {mobileMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            className="overflow-hidden border-t border-white/[0.08] bg-[#080817]/95 md:hidden"
-          >
-            <div className="mx-auto flex max-w-7xl flex-col gap-1 px-5 py-4">
-              {[
-                { label: "Features", href: "#features" },
-                { label: "How it works", href: "#how-it-works" },
-                { label: "Live demo", href: "#demo" },
-              ].map((item) => (
-                <a
-                  key={item.href}
-                  href={item.href}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="rounded-xl px-4 py-3 text-sm text-slate-300 transition hover:bg-white/[0.06] hover:text-white"
-                >
-                  {item.label}
-                </a>
-              ))}
-
-              {!isLoggedIn && (
-                <button
-                  type="button"
-                  onClick={handleLogin}
-                  className="mt-2 flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 px-4 py-3 text-sm font-semibold text-white"
-                >
-                  Get started
-                  <ArrowRight className="h-4 w-4" />
-                </button>
-              )}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </motion.header>
   );
 };
