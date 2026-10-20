@@ -23,7 +23,7 @@ const EmbedClient = ({userId}:{userId:string}) => {
   const [showPreview, setShowPreview] = useState(true);
 
   const embedCode = `<script
-  src="https://your-domain.com/nexora-widget.js"
+  src="https://ai-customer-support-chatbot-mauve.vercel.app/chatBot.js"
   data-owner-id="${userId}"
   defer
 ></script>`;
@@ -35,7 +35,7 @@ export default function Layout() {
     <>
       {/* Your application */}
       <Script
-        src="https://your-domain.com/nexora-widget.js"
+        src="https://ai-customer-support-chatbot-mauve.vercel.app/chatBot.js"
         data-owner-id="${userId}"
         strategy="lazyOnload"
       />
