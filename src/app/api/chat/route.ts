@@ -3,7 +3,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { GoogleGenAI } from "@google/genai";
 import connectDb from "@/lib/db";
 
-
+// Vercel-এ ফাংশন সর্বোচ্চ কতক্ষণ চলবে (সেকেন্ডে)
+// ৬০ সেকেন্ড যথেষ্ট; Gemini দ্রুত সাড়া দিলে এর কমেই শেষ হবে
+export const maxDuration = 60;
 
 function corsHeaders() {
   const headers = new Headers();
@@ -32,8 +34,6 @@ export async function OPTIONS() {
 }
 
 export async function POST(req: NextRequest) {
-
-
   try {
     const body = await req.json();
     const { message, ownerId } = body;
@@ -111,10 +111,16 @@ Rules:
       apiKey: process.env.GEMINI_API_KEY,
     });
 
+    // ✅ মূল ফিক্স: thinking_level কে "low" করুন
+    // Gemini 3.8 Flash-এ ডিফল্ট "medium", যা ধীর
+    // "low" দিলে দ্রুত উত্তর আসবে (customer support-এর জন্য আদর্শ)
     const interaction = await ai.interactions.create({
-      model:"gemini-3.8-flash",
+      model: "gemini-3.8-flash",
       system_instruction: systemInstruction,
       input: message.trim(),
+      generation_config: {
+        thinking_level: "low",
+      },
     });
 
     const reply = interaction.output_text?.trim();

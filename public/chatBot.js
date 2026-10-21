@@ -290,7 +290,6 @@
       overflowWrap: "anywhere",
     });
 
-    // textContent prevents customer and AI text from being interpreted as HTML.
     bubble.textContent = text;
     row.appendChild(bubble);
     messages.appendChild(row);
@@ -337,7 +336,6 @@
         row.remove();
       },
       setText(text) {
-        // Replace the animated dots with the final message.
         bubble.textContent = text;
         messages.scrollTop = messages.scrollHeight;
       },
@@ -390,6 +388,9 @@
 
   closeButton.addEventListener("click", () => setOpen(false));
 
+  // ✅ FIXED: timeout raised to 200s so the client waits for Gemini's slow response.
+  const REQUEST_TIMEOUT_MS = 200000;
+
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
 
@@ -408,7 +409,16 @@
     const typing = addTypingIndicator();
 
     const controller = new AbortController();
-    const timeoutId = window.setTimeout(() => controller.abort(), 20000);
+    const timeoutId = window.setTimeout(() => {
+      console.warn(
+        "[Nexora] Request timed out after",
+        REQUEST_TIMEOUT_MS,
+        "ms",
+      );
+      controller.abort();
+    }, REQUEST_TIMEOUT_MS);
+
+    const t0 = performance.now();
 
     try {
       const response = await fetch(api_url, {
@@ -425,6 +435,11 @@
 
       const result = await response.json();
 
+      console.debug("[Nexora] response", {
+        status: response.status,
+        elapsedMs: Math.round(performance.now() - t0),
+      });
+
       if (!response.ok || !result.success) {
         throw new Error(
           result.message || "Unable to get a response. Please try again.",
@@ -435,6 +450,12 @@
         result.data?.reply || "Sorry, I couldn't generate a response.",
       );
     } catch (error) {
+      console.error("[Nexora] request failed", {
+        name: error?.name,
+        message: error?.message,
+        elapsedMs: Math.round(performance.now() - t0),
+      });
+
       typing.setText(
         error?.name === "AbortError"
           ? "That took too long. Please try again."
