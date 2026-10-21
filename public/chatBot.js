@@ -332,7 +332,7 @@
     sendButton.style.opacity = "0.6";
     sendButton.style.cursor = "wait";
 
-    const typing = addMessage("Thinking...", "bot");
+    const typing = addMessage(".....", "bot");
 
     try {
       const response = await fetch(api_url, {

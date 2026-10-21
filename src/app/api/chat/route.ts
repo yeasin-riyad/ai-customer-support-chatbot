@@ -3,24 +3,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { GoogleGenAI } from "@google/genai";
 import connectDb from "@/lib/db";
 
-const allowedOrigins = [
-  "http://127.0.0.1:5500",
-  "http://localhost:5500",
-];
 
-function corsHeaders(origin: string | null) {
+
+function corsHeaders() {
   const headers = new Headers();
-
-  if (origin && allowedOrigins.includes(origin)) {
-    headers.set("Access-Control-Allow-Origin", origin);
-    headers.set("Vary", "Origin");
-  }
-
+  headers.set("Access-Control-Allow-Origin", "*");
   headers.set("Access-Control-Allow-Methods", "POST, OPTIONS");
-  headers.set(
-    "Access-Control-Allow-Headers",
-    "Content-Type, Authorization",
-  );
+  headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
 
   return headers;
 }
@@ -28,38 +17,22 @@ function corsHeaders(origin: string | null) {
 function jsonResponse(
   body: Record<string, unknown>,
   status: number,
-  origin: string | null,
 ) {
   return NextResponse.json(body, {
     status,
-    headers: corsHeaders(origin),
+    headers: corsHeaders(),
   });
 }
 
-// Handle the browser's CORS preflight request.
-export async function OPTIONS(req: NextRequest) {
-  const origin = req.headers.get("origin");
-
-  if (origin && !allowedOrigins.includes(origin)) {
-    return new NextResponse(null, { status: 403 });
-  }
-
+export async function OPTIONS() {
   return new NextResponse(null, {
     status: 204,
-    headers: corsHeaders(origin),
+    headers: corsHeaders(),
   });
 }
 
 export async function POST(req: NextRequest) {
-  const origin = req.headers.get("origin");
 
-  if (origin && !allowedOrigins.includes(origin)) {
-    return jsonResponse(
-      { success: false, message: "Origin not allowed." },
-      403,
-      origin,
-    );
-  }
 
   try {
     const body = await req.json();
@@ -76,8 +49,7 @@ export async function POST(req: NextRequest) {
           success: false,
           message: "A valid message and owner ID are required.",
         },
-        400,
-        origin,
+        400
       );
     }
 
@@ -87,16 +59,14 @@ export async function POST(req: NextRequest) {
           success: false,
           message: "Message must be 5000 characters or fewer.",
         },
-        400,
-        origin,
+        400
       );
     }
 
     if (!process.env.GEMINI_API_KEY) {
       return jsonResponse(
         { success: false, message: "AI service is not configured." },
-        500,
-        origin,
+        500
       );
     }
 
@@ -109,8 +79,7 @@ export async function POST(req: NextRequest) {
     if (!setting) {
       return jsonResponse(
         { success: false, message: "Business settings not found." },
-        404,
-        origin,
+        404
       );
     }
 
@@ -153,8 +122,7 @@ Rules:
     if (!reply) {
       return jsonResponse(
         { success: false, message: "The AI could not generate a response." },
-        502,
-        origin,
+        502
       );
     }
 
@@ -167,8 +135,7 @@ Rules:
           businessName: setting.businessName || "Business Support",
         },
       },
-      200,
-      origin,
+      200
     );
   } catch (error: unknown) {
     console.error("Chat API error:", error);
@@ -178,8 +145,7 @@ Rules:
         success: false,
         message: "Something went wrong while generating the response.",
       },
-      500,
-      origin,
+      500
     );
   }
 }
