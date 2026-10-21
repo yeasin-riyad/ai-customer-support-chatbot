@@ -115,7 +115,7 @@ Rules:
     // Gemini 3.8 Flash-এ ডিফল্ট "medium", যা ধীর
     // "low" দিলে দ্রুত উত্তর আসবে (customer support-এর জন্য আদর্শ)
     const interaction = await ai.interactions.create({
-      model: "gemini-3.8-flash",
+      model: "gemini-2.5-flash",
       system_instruction: systemInstruction,
       input: message.trim(),
       generation_config: {
