@@ -11,6 +11,34 @@
   // Prevent duplicate widgets.
   if (document.getElementById("nexora-chat-widget")) return;
 
+  // ---- Styles for the animated typing indicator ----
+  const style = document.createElement("style");
+  style.textContent = `
+    @keyframes nexora-bounce {
+      0%, 80%, 100% { transform: translateY(0); opacity: 0.35; }
+      40%           { transform: translateY(-5px); opacity: 1; }
+    }
+    .nexora-typing {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      height: 14px;
+    }
+    .nexora-typing span {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #a5b4fc;
+      animation: nexora-bounce 1.2s infinite ease-in-out;
+    }
+    .nexora-typing span:nth-child(2) { animation-delay: 0.15s; }
+    .nexora-typing span:nth-child(3) { animation-delay: 0.30s; }
+    @media (prefers-reduced-motion: reduce) {
+      .nexora-typing span { animation: none; opacity: 0.6; }
+    }
+  `;
+  document.head.appendChild(style);
+
   const root = document.createElement("div");
   root.id = "nexora-chat-widget";
 
@@ -271,6 +299,51 @@
     return bubble;
   }
 
+  // Animated three-dot typing indicator inside a bot bubble.
+  function addTypingIndicator() {
+    const row = document.createElement("div");
+
+    Object.assign(row.style, {
+      display: "flex",
+      justifyContent: "flex-start",
+      width: "100%",
+    });
+
+    const bubble = document.createElement("div");
+
+    Object.assign(bubble.style, {
+      maxWidth: "85%",
+      padding: "11px 13px",
+      borderRadius: "15px 15px 15px 4px",
+      background: "#19192c",
+      border: "1px solid rgba(255,255,255,0.07)",
+    });
+
+    const dots = document.createElement("div");
+    dots.className = "nexora-typing";
+    dots.setAttribute("role", "status");
+    dots.setAttribute("aria-label", "Nexora AI is typing");
+    dots.innerHTML = "<span></span><span></span><span></span>";
+
+    bubble.appendChild(dots);
+    row.appendChild(bubble);
+    messages.appendChild(row);
+    messages.scrollTop = messages.scrollHeight;
+
+    return {
+      row,
+      bubble,
+      remove() {
+        row.remove();
+      },
+      setText(text) {
+        // Replace the animated dots with the final message.
+        bubble.textContent = text;
+        messages.scrollTop = messages.scrollHeight;
+      },
+    };
+  }
+
   function setOpen(open) {
     isOpen = open;
     button.setAttribute("aria-expanded", String(open));
@@ -332,7 +405,10 @@
     sendButton.style.opacity = "0.6";
     sendButton.style.cursor = "wait";
 
-    const typing = addMessage(".....", "bot");
+    const typing = addTypingIndicator();
+
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => controller.abort(), 20000);
 
     try {
       const response = await fetch(api_url, {
@@ -344,10 +420,10 @@
           ownerId,
           message,
         }),
+        signal: controller.signal,
       });
 
       const result = await response.json();
-
 
       if (!response.ok || !result.success) {
         throw new Error(
@@ -355,14 +431,19 @@
         );
       }
 
-      typing.textContent =
-        result.data?.reply || "Sorry, I couldn't generate a response.";
+      typing.setText(
+        result.data?.reply || "Sorry, I couldn't generate a response.",
+      );
     } catch (error) {
-      typing.textContent =
-        error instanceof Error
-          ? error.message
-          : "Something went wrong. Please try again.";
+      typing.setText(
+        error?.name === "AbortError"
+          ? "That took too long. Please try again."
+          : error instanceof Error
+            ? error.message
+            : "Something went wrong. Please try again.",
+      );
     } finally {
+      window.clearTimeout(timeoutId);
       isSending = false;
       sendButton.disabled = false;
       input.disabled = false;
