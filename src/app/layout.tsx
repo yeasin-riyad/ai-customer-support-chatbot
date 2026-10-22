@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "sonner";
+import Script from "next/script";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -33,7 +34,13 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           duration={3000}
           theme="light"
         />
+        <Script
+        src="https://ai-customer-support-chatbot-mauve.vercel.app/chatBot.js"
+        data-owner-id="usr_148106828457181448"
+        strategy="lazyOnload"
+      />
       </body>
+      
     </html>
   );
 }
